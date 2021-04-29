@@ -1,0 +1,10 @@
+client/node_modules/
+server/dist/
+server/node_modules/
+server/ormconfig.json
+server/package-lock.json
+server/yarn-error.log
+server/yarn.lock
+server/dist/
+server/src/.env
+client/yarn.lock
