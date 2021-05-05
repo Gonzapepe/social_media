@@ -14,6 +14,7 @@ import { createAccessToken, createRefreshToken } from "./middleware/auth";
 import { sendRefreshToken } from "./helpers/sendRefreshToken";
 import { Upvote } from "./entity/Upvote";
 import { Post } from "./entity/Post";
+import { Comment } from "./entity/Comment";
 import { graphqlUploadExpress } from "graphql-upload";
 import bodyParser from "body-parser";
 require("dotenv").config({ path: __dirname + "/.env" });
@@ -28,7 +29,7 @@ const main = async () => {
     logging: true,
     port: (process.env.PORT as any) || 5432,
     migrations: [path.join(__dirname, "./migration/*")],
-    entities: [User, Post, Upvote],
+    entities: [User, Post, Upvote, Comment],
   });
 
   // await conn.runMigrations();
