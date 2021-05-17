@@ -11,8 +11,8 @@ import {
 } from "typeorm";
 import { Field, Int, ObjectType } from "type-graphql";
 import { User } from "./User";
-import { Upvote } from "./Upvote";
 import { Post } from "./Post";
+
 @ObjectType()
 @Entity()
 export class Comment extends BaseEntity {
@@ -41,4 +41,12 @@ export class Comment extends BaseEntity {
     onDelete: "CASCADE",
   })
   post: Post;
+
+  @Field(() => String)
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Field(() => String)
+  @UpdateDateColumn()
+  UpdatedAt: Date;
 }

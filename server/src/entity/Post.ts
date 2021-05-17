@@ -47,6 +47,10 @@ export class Post extends BaseEntity {
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
 
+  @Field()
+  @Column({ type: "int", default: 0 })
+  commentaries!: number;
+
   @Field(() => Int, { nullable: true })
   voteStatus: number | null;
 

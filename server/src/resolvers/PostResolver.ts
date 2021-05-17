@@ -12,6 +12,7 @@ import {
   Int,
 } from "type-graphql";
 import { getConnection } from "typeorm";
+import { Comment } from "../entity/Comment";
 import { Post } from "../entity/Post";
 import { Upvote } from "../entity/Upvote";
 import { isAuth } from "../middleware/isAuth";
@@ -43,6 +44,67 @@ export class PostResolver {
     });
 
     return upvote ? upvote.value : null;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async postComment(
+    @Arg("text", () => String) text: string,
+    @Arg("postId", () => String) postId: string,
+    @Arg("commentId", () => String, { nullable: true }) commentId: string,
+    @Ctx() { payload }: MyContext
+  ): Promise<Boolean> {
+    if (!payload.userId) {
+      return false;
+    }
+    const { userId } = payload;
+    let commentaryNumber = text ? 1 : null;
+
+    const comment = await Comment.findOne({
+      where: { postId, creatorId: userId, id: commentId },
+    });
+
+    if (comment) {
+      commentaryNumber = 0;
+      await getConnection().transaction(async (tm) => {
+        await tm.query(
+          `
+          update comment
+          set "text" = $1
+          where "postId" = $2 and "creatorId" = $3
+        `,
+          [text, postId, userId]
+        );
+
+        await tm.query(
+          `
+          update post
+          set commentaries = commentaries + $1
+          where "id" = $2
+        `,
+          [commentaryNumber, postId]
+        );
+      });
+    } else if (!comment) {
+      await getConnection().transaction(async (tm) => {
+        await tm.query(
+          `
+          insert into comment ("postId", "creatorId", "text") values ($1, $2, $3)
+        `,
+          [postId, userId, text]
+        );
+
+        await tm.query(
+          `
+            update post
+            set commentaries = commentaries + $1
+            where "id" = $2
+          `,
+          [commentaryNumber, postId]
+        );
+      });
+    }
+    return true;
   }
 
   @Mutation(() => Post)
