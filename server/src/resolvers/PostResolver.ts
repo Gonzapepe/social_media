@@ -206,4 +206,16 @@ export class PostResolver {
   posts(): Promise<Post[] | undefined> {
     return Post.find();
   }
+
+  @Query(() => [Comment], { nullable: true })
+  async commentsFromPosts(
+    @Arg("postId", () => String) postId: string
+  ): Promise<Comment[] | null> {
+    if (!postId) {
+      return null;
+    }
+
+    const result = await Comment.find({ where: { postId } });
+    return result;
+  }
 }
