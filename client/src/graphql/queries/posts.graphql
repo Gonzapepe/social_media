@@ -1,0 +1,13 @@
+query Posts {
+  posts {
+    id
+    votes
+    commentaries
+    title
+    text
+    creatorId
+    votes
+    createdAt
+    UpdatedAt
+  }
+}

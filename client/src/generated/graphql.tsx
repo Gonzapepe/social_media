@@ -13,12 +13,44 @@ export type Scalars = {
   Float: number;
   /** The javascript `Date` as string. Type represents date and time as the ISO Date string. */
   DateTime: any;
+  /** The `Upload` scalar type represents a file upload. */
+  Upload: any;
 };
 
 export type Query = {
   __typename?: 'Query';
-  hello: Scalars['String'];
+  post?: Maybe<Post>;
+  posts?: Maybe<Array<Post>>;
+  commentsFromPosts?: Maybe<Array<Comment>>;
   me?: Maybe<User>;
+  users?: Maybe<Array<User>>;
+  bye: Scalars['String'];
+};
+
+
+export type QueryPostArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryCommentsFromPostsArgs = {
+  postId: Scalars['String'];
+};
+
+export type Post = {
+  __typename?: 'Post';
+  id: Scalars['String'];
+  title: Scalars['String'];
+  text: Scalars['String'];
+  creatorId: Scalars['String'];
+  creator: User;
+  upvotes: Array<Upvote>;
+  votes: Scalars['Float'];
+  comments: Array<Comment>;
+  commentaries: Scalars['Float'];
+  voteStatus?: Maybe<Scalars['Int']>;
+  createdAt: Scalars['String'];
+  UpdatedAt: Scalars['String'];
 };
 
 export type User = {
@@ -27,16 +59,73 @@ export type User = {
   username: Scalars['String'];
   email: Scalars['String'];
   password: Scalars['String'];
+  posts: Array<Post>;
+  upvotes: Array<Upvote>;
+  comments: Array<Comment>;
+  tokenVersion: Scalars['Float'];
   created_at: Scalars['DateTime'];
   updated_at: Scalars['DateTime'];
+};
+
+export type Upvote = {
+  __typename?: 'Upvote';
+  value: Scalars['Float'];
+  userId: Scalars['String'];
+  user: User;
+  postId: Scalars['String'];
+  post: Post;
+};
+
+export type Comment = {
+  __typename?: 'Comment';
+  id: Scalars['String'];
+  text: Scalars['String'];
+  creatorId: Scalars['String'];
+  user: User;
+  postId: Scalars['String'];
+  post: Post;
+  createdAt: Scalars['String'];
+  UpdatedAt: Scalars['String'];
 };
 
 
 export type Mutation = {
   __typename?: 'Mutation';
+  postComment: Scalars['Boolean'];
+  createPost: Post;
+  updatePost?: Maybe<Post>;
+  vote: Scalars['Boolean'];
   register: UserResponse;
-  login: UserResponse;
+  login: LoginResponse;
   logout: Scalars['Boolean'];
+  revokeRefreshTokensForUser: Scalars['Boolean'];
+  deleteUser: DeleteResponse;
+  profilePicture: ProfileResponse;
+};
+
+
+export type MutationPostCommentArgs = {
+  commentId?: Maybe<Scalars['String']>;
+  postId: Scalars['String'];
+  text: Scalars['String'];
+};
+
+
+export type MutationCreatePostArgs = {
+  input: PostInput;
+};
+
+
+export type MutationUpdatePostArgs = {
+  text: Scalars['String'];
+  title: Scalars['String'];
+  id: Scalars['String'];
+};
+
+
+export type MutationVoteArgs = {
+  value: Scalars['Int'];
+  postId: Scalars['String'];
 };
 
 
@@ -48,6 +137,26 @@ export type MutationRegisterArgs = {
 export type MutationLoginArgs = {
   password: Scalars['String'];
   usernameOrEmail: Scalars['String'];
+};
+
+
+export type MutationRevokeRefreshTokensForUserArgs = {
+  userId: Scalars['String'];
+};
+
+
+export type MutationDeleteUserArgs = {
+  userId: Scalars['String'];
+};
+
+
+export type MutationProfilePictureArgs = {
+  file: Scalars['Upload'];
+};
+
+export type PostInput = {
+  title: Scalars['String'];
+  text: Scalars['String'];
 };
 
 export type RegisterInput = {
@@ -69,6 +178,26 @@ export type ErrorType = {
   message: Scalars['String'];
 };
 
+export type LoginResponse = {
+  __typename?: 'LoginResponse';
+  errors?: Maybe<Array<ErrorType>>;
+  user?: Maybe<User>;
+  accessToken: Scalars['String'];
+};
+
+export type DeleteResponse = {
+  __typename?: 'DeleteResponse';
+  errors?: Maybe<Array<ErrorType>>;
+  deleted: Scalars['Boolean'];
+};
+
+
+export type ProfileResponse = {
+  __typename?: 'ProfileResponse';
+  errors?: Maybe<Array<ErrorType>>;
+  filename: Scalars['String'];
+};
+
 export type LoginMutationVariables = Exact<{
   usernameOrEmail: Scalars['String'];
   password: Scalars['String'];
@@ -78,7 +207,7 @@ export type LoginMutationVariables = Exact<{
 export type LoginMutation = (
   { __typename?: 'Mutation' }
   & { login: (
-    { __typename?: 'UserResponse' }
+    { __typename?: 'LoginResponse' }
     & { user?: Maybe<(
       { __typename?: 'User' }
       & Pick<User, 'username' | 'email' | 'id'>
@@ -117,6 +246,17 @@ export type MeQuery = (
     { __typename?: 'User' }
     & Pick<User, 'username' | 'email' | 'id'>
   )> }
+);
+
+export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PostsQuery = (
+  { __typename?: 'Query' }
+  & { posts?: Maybe<Array<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'votes' | 'commentaries' | 'title' | 'text' | 'creatorId' | 'createdAt' | 'UpdatedAt'>
+  )>> }
 );
 
 
@@ -236,3 +376,43 @@ export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery
 export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
 export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
 export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
+export const PostsDocument = gql`
+    query Posts {
+  posts {
+    id
+    votes
+    commentaries
+    title
+    text
+    creatorId
+    votes
+    createdAt
+    UpdatedAt
+  }
+}
+    `;
+
+/**
+ * __usePostsQuery__
+ *
+ * To run a query within a React component, call `usePostsQuery` and pass it any options that fit your needs.
+ * When your component renders, `usePostsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePostsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function usePostsQuery(baseOptions?: Apollo.QueryHookOptions<PostsQuery, PostsQueryVariables>) {
+        return Apollo.useQuery<PostsQuery, PostsQueryVariables>(PostsDocument, baseOptions);
+      }
+export function usePostsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<PostsQuery, PostsQueryVariables>) {
+          return Apollo.useLazyQuery<PostsQuery, PostsQueryVariables>(PostsDocument, baseOptions);
+        }
+export type PostsQueryHookResult = ReturnType<typeof usePostsQuery>;
+export type PostsLazyQueryHookResult = ReturnType<typeof usePostsLazyQuery>;
+export type PostsQueryResult = Apollo.QueryResult<PostsQuery, PostsQueryVariables>;
